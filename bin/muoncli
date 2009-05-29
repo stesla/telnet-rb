@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+#-*- mode: Ruby -*-
+
+$:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+
+require 'socket'
+require 'muon/io_stream'
+require 'muon/telnet'
+
+unless ARGV.size == 2
+  STDERR.puts "USAGE: #{File.basename($0)} host port"
+  exit 1
+end
+
+host = ARGV[0]
+port = ARGV[1].to_i
+
+server = Muon::Telnet.to(host, port)
+console = Muon::IoStream.new(STDIN)
+
+begin
+  print server.next_available if server.data_available?
+  server.print console.next_available if console.data_available?
+  sleep 0.015
+end until server.at_end?
